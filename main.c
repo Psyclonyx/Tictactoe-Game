@@ -4,11 +4,11 @@
 #include <stdbool.h>
 #include <time.h>
 #if defined(_WIN32) || defined(_WIN64)
-    #include <windows.h>
-    #define IS_WINDOWS 1
+#include <windows.h>
+#define IS_WINDOWS 1
 #else
-    #include <unistd.h>
-    #define IS_WINDOWS 0
+#include <unistd.h>
+#define IS_WINDOWS 0
 #endif
 
 void drawBoard(char pos[]);
@@ -20,6 +20,8 @@ int main()
     int turn = 0;
     char sign;
     char pos[9];
+
+    // Initialize positions with numbers 1-9
     for (int i = 0; i < 9; i++)
     {
         pos[i] = i + '1';
@@ -28,30 +30,38 @@ int main()
     int difficulty;
     srand(time(NULL)); // seed rand() with time
 
-    printf("TIC TAC TOE\n");
-    drawBoard(pos);
-    for (int i = 0; i < 9; i++)
-    {
-        pos[i] = ' ';
-    }
     while (true)
     {
+        system("clear");
+        printf("TIC TAC TOE\n");
+        drawBoard(pos);
+        for (int i = 0; i < 9; i++)
+        {
+            pos[i] = ' ';
+        }
         // Difficulty setting
         printf("Choose a difficulty for opponent\n");
         printf("Easy (1), Normal (2), Hard (3): ");
         scanf("%d", &difficulty);
+        while (scanf("%d", &difficulty) != 1 || difficulty < 1 || difficulty > 3)
+        {
+            printf("Invalid input. Please enter 1, 2, or 3: ");
+            while (getchar() != '\n');
+        }
+        while (getchar() != '\n');
 
         // Game loop
         while (true)
         {
-            // system("cls");
+            system("clear");
             drawBoard(pos);
 
             if (turn == 9) // All moves made
             {
                 printf("Tie!\n");
-                return 0;
+                break;
             }
+
             // Alternate player move
             if (turn % 2 == 0)
             {
@@ -82,13 +92,13 @@ int main()
                 // Check if position is occupied
                 if (pos[index - 1] == 'X' || pos[index - 1] == 'O')
                 {
-                    printf("Position already taken!");
+                    printf("Position already taken!\n");
                     printf("Press Enter to continue...");
                     getchar(); // Wait for Enter key
                     continue;
                 }
                 // Accept player input
-                pos[index - 1] = sign;
+                pos[index - 1] = 'X';
             }
             else
             {
@@ -100,6 +110,7 @@ int main()
             // Check for win condition
             if (winCondition(pos, sign))
             {
+                system("clear");
                 drawBoard(pos);
                 if (turn % 2 == 0)
                 {
@@ -109,12 +120,13 @@ int main()
                 {
                     printf("You lost!\n");
                 }
-                return 0;
+                break;
             }
             turn++;
         }
 
         printf("Play again? y/n: ");
+        // while (getchar() != '\n'); // clear buffer
         char input;
         scanf(" %c", &input);
         while (input != 'y' && input != 'n')
@@ -122,6 +134,7 @@ int main()
             printf("Please enter y or n: ");
             scanf(" %c", &input);
         }
+
         if (input == 'y')
         {
             turn = 0;
@@ -149,7 +162,7 @@ void drawBoard(char pos[])
 bool winCondition(char pos[], char sign)
 {
     // Check for horizontal wins
-    for (int i = 0; i < 7; i+=3)
+    for (int i = 0; i < 7; i += 3)
     {
         if (pos[i] == sign && pos[i + 1] == sign && pos[i + 2] == sign)
         {
@@ -172,19 +185,20 @@ bool winCondition(char pos[], char sign)
     // If no wins, game continues
     return false;
 }
-
 int computerMove(char pos[], int turn, int difficulty)
 {
-    int size=9-turn;
-    
+    int size = 9 - turn;
+
     // Allocate array for available moves
-    int* availableMoves = malloc(size * sizeof(int));     
+    int *availableMoves = malloc(size * sizeof(int));
 
     // Collect indices of empty positions
     // printf("Available moves: ");
     int index = 0;
-    for (int i = 0; i < 9; i++) {
-        if (pos[i] == ' ') {
+    for (int i = 0; i < 9; i++)
+    {
+        if (pos[i] == ' ')
+        {
             availableMoves[index] = i;
             // printf("%d ", i + 1);
             index++;
@@ -194,19 +208,72 @@ int computerMove(char pos[], int turn, int difficulty)
 
     // printf("Choosing move: ");
     int move = 0;
-    switch(difficulty)
+    switch (difficulty)
     {
     case 1:
         move = availableMoves[rand() % size];
-        // printf("%d \n", move + 1);
         return move;
     case 2:
+        // Check for winning move
+        for (int i = 0; i < size; i++)
+        {
+            pos[availableMoves[i]] = 'O'; // Temporarily place 'O'
+            if (winCondition(pos, 'O'))
+            {
+                move = availableMoves[i];
+                pos[availableMoves[i]] = ' '; // Reset position
+                free(availableMoves);
+                return move;
+            }
+            pos[availableMoves[i]] = ' '; // Reset position
+        }
+        // Check for losing move
+        for (int i = 0; i < size; i++)
+        {
+            pos[availableMoves[i]] = 'X'; // Temporarily place 'X'
+            if (winCondition(pos, 'X'))
+            {
+                move = availableMoves[i];
+                pos[availableMoves[i]] = ' '; // Reset position
+                free(availableMoves);
+                return move;
+            }
+            pos[availableMoves[i]] = ' '; // Reset position
+        }
+        // If no winning or losing move, choose randomly
         move = availableMoves[rand() % size];
-        // printf("%d \n", move + 1);
+        free(availableMoves);
         return move;
     case 3:
+        // Check for winning move
+        for (int i = 0; i < size; i++)
+        {
+            pos[availableMoves[i]] = 'O'; // Temporarily place 'O'
+            if (winCondition(pos, 'O'))
+            {
+                move = availableMoves[i];
+                pos[availableMoves[i]] = ' '; // Reset position
+                free(availableMoves);
+                return move;
+            }
+            pos[availableMoves[i]] = ' '; // Reset position
+        }
+        // Check for losing move
+        for (int i = 0; i < size; i++)
+        {
+            pos[availableMoves[i]] = 'X'; // Temporarily place 'X'
+            if (winCondition(pos, 'X'))
+            {
+                move = availableMoves[i];
+                pos[availableMoves[i]] = ' '; // Reset position
+                free(availableMoves);
+                return move;
+            }
+            pos[availableMoves[i]] = ' '; // Reset position
+        }
+        // If no winning or losing move, choose randomly
         move = availableMoves[rand() % size];
-        // printf("%d \n", move + 1);
+        free(availableMoves);
         return move;
     default:
         break;

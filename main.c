@@ -37,7 +37,7 @@ int main()
 
     while (true)
     {
-        system("clear");
+        system(IS_WINDOWS ? "cls" : "clear");
         printf("TIC TAC TOE\n");
         drawBoard(pos);
         clearBoard(pos);
@@ -269,6 +269,7 @@ int computerMove(char pos[], int turn, int difficulty)
         return randomMove(size, availableMoves);
     case 4:
         if (pos[4] == ' '){
+            free(availableMoves);
             return 4;
         }
         // Check for winning move

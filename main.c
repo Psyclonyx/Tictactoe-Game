@@ -42,13 +42,14 @@ int main()
         // Difficulty setting
         printf("Choose a difficulty for opponent\n");
         printf("Easy (1), Normal (2), Hard (3): ");
-        scanf("%d", &difficulty);
         while (scanf("%d", &difficulty) != 1 || difficulty < 1 || difficulty > 3)
         {
             printf("Invalid input. Please enter 1, 2, or 3: ");
-            while (getchar() != '\n');
+            while (getchar() != '\n')
+                ;
         }
-        while (getchar() != '\n');
+        while (getchar() != '\n')
+            ;
 
         // Game loop
         while (true)
@@ -212,6 +213,7 @@ int computerMove(char pos[], int turn, int difficulty)
     {
     case 1:
         move = availableMoves[rand() % size];
+        free(availableMoves);
         return move;
     case 2:
         // Check for winning move
@@ -245,7 +247,7 @@ int computerMove(char pos[], int turn, int difficulty)
         free(availableMoves);
         return move;
     case 3:
-        // Check for winning move
+        // Check for winning move 1 move ahead
         for (int i = 0; i < size; i++)
         {
             pos[availableMoves[i]] = 'O'; // Temporarily place 'O'
@@ -258,7 +260,7 @@ int computerMove(char pos[], int turn, int difficulty)
             }
             pos[availableMoves[i]] = ' '; // Reset position
         }
-        // Check for losing move
+        // Check for losing move 1 move ahead
         for (int i = 0; i < size; i++)
         {
             pos[availableMoves[i]] = 'X'; // Temporarily place 'X'
@@ -268,6 +270,51 @@ int computerMove(char pos[], int turn, int difficulty)
                 pos[availableMoves[i]] = ' '; // Reset position
                 free(availableMoves);
                 return move;
+            }
+            pos[availableMoves[i]] = ' '; // Reset position
+        }
+        // Check for losing move two moves ahead
+        for (int i = 0; i < size; i++){
+            pos[availableMoves[i]] = 'X'; // Temporarily place 'O'
+            // Check two moves ahead for losing move
+            for (int j = 0; j < size; j++)
+            {
+                if (availableMoves[j] == availableMoves[i])
+                {
+                    continue; // Skip the same move
+                }
+                pos[availableMoves[j]] = 'X'; // Temporarily place 'O'
+                if (winCondition(pos, 'X'))
+                {
+                    move = availableMoves[i];
+                    pos[availableMoves[i]] = ' '; // Reset position
+                    pos[availableMoves[j]] = ' '; // Reset position
+                    free(availableMoves);
+                    return move;
+                }
+                pos[availableMoves[j]] = ' '; // Reset position
+            }
+            pos[availableMoves[i]] = ' '; // Reset position
+        }
+        // Check for winning move two moves ahead
+        for (int i = 0; i < size; i++)
+        {
+            pos[availableMoves[i]] = 'O'; // Temporarily place 'O'
+            // Check two moves ahead for winning move
+            for (int j = 0; j < size; j++)
+            {
+                if (availableMoves[j] == availableMoves[i])
+                    continue;                 // Skip the same move
+                pos[availableMoves[j]] = 'O'; // Temporarily place 'O'
+                if (winCondition(pos, 'O'))
+                {
+                    move = availableMoves[i];
+                    pos[availableMoves[i]] = ' '; // Reset position
+                    pos[availableMoves[j]] = ' '; // Reset position
+                    free(availableMoves);
+                    return move;
+                }
+                pos[availableMoves[j]] = ' '; // Reset position
             }
             pos[availableMoves[i]] = ' '; // Reset position
         }
